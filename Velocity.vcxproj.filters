@@ -13,10 +13,34 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Исходные файлы\RestAPI">
+      <UniqueIdentifier>{85a594cf-21ab-4da9-9c60-3e07b2bc7446}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\RestAPI\Core">
+      <UniqueIdentifier>{97c396be-cb52-4b57-9d4a-1c8a1a1b8fb3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\RestAPI\Utils">
+      <UniqueIdentifier>{1f623887-f8f2-4093-a7f2-7c7dfe72e24b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Utils">
+      <UniqueIdentifier>{244dc1c4-f964-4159-b3e7-1733755ec343}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Исходные файлы\Config">
+      <UniqueIdentifier>{eebcab21-470f-4fff-8678-b065ee7d19d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="DllMain.cpp">
+    <ClCompile Include="Main.cpp">
       <Filter>Исходные файлы</Filter>
+    </ClCompile>
+    <ClCompile Include="RestAPI\Core\Client.cpp">
+      <Filter>Исходные файлы\RestAPI\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="RestAPI\Utils\Utils.cpp">
+      <Filter>Исходные файлы\RestAPI\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Config\ConfigManager.cpp">
+      <Filter>Исходные файлы\Config</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -31,6 +55,33 @@
     </ClInclude>
     <ClInclude Include="JLI.hpp">
       <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="Config.hpp">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="RestAPI\Core\Client.hpp">
+      <Filter>Исходные файлы\RestAPI\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="RestAPI\Utils\Utils.hpp">
+      <Filter>Исходные файлы\RestAPI\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\ErrorHandler.hpp">
+      <Filter>Исходные файлы\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Hashes.hpp">
+      <Filter>Исходные файлы\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Time.hpp">
+      <Filter>Исходные файлы\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Main.hpp">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="Config\ConfigManager.hpp">
+      <Filter>Исходные файлы\Config</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Keybind.hpp">
+      <Filter>Исходные файлы\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
