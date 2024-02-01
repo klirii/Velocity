@@ -2,12 +2,14 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <mutex>
 
 #include "Utils/Keybind.hpp"
 #include "Utils/ErrorHandler.hpp"
 
 namespace Config {
 	std::string path;
+	std::mutex config_lock;
 
 #define GET_INT_VAL(stream, line, param) {	\
 	if (line == #param) {					\
@@ -39,12 +41,16 @@ namespace Config {
 		const bool only_moving,
 		const bool enabled
 	) {
+		std::lock_guard<std::mutex> lock(config_lock);
+
 		std::ifstream icfg(path);
 		std::string keybind;
 
 		if (icfg.is_open()) {
-			for (std::string line; std::getline(icfg, line, '='); )
-				GET_STRING_VAL(icfg, line, keybind);
+			for (std::string param, value; std::getline(icfg, param, '=') && std::getline(icfg, value); ) {
+				if (param == "keybind")
+					keybind = value;
+			}
 
 			icfg.close();
 		}
@@ -52,7 +58,7 @@ namespace Config {
 			MessageBoxA(Utils::ErrorHandler::window, "Ошибка чтения файла!", "Velocity", MB_ICONERROR);
 		}
 
-		std::ofstream ocfg(path);
+		std::ofstream ocfg(path, std::ios::trunc);
 		if (ocfg.is_open()) {
 			ocfg << "horizontal_min=" << horizontal_min << std::endl;
 			ocfg << "horizontal_max=" << horizontal_max << std::endl;
@@ -61,7 +67,7 @@ namespace Config {
 			ocfg << "only_forward=" << (only_forward ? "true" : "false") << std::endl;
 			ocfg << "only_moving=" << (only_moving ? "true" : "false") << std::endl;
 			ocfg << "enabled=" << (enabled ? "true" : "false") << std::endl;
-			ocfg << "keybind=" << keybind << std::endl;
+			ocfg << "keybind=" << keybind;
 		}
 		else {
 			MessageBoxA(Utils::ErrorHandler::window, "Ошибка записи файла!", "Velocity", MB_ICONERROR);
@@ -78,6 +84,8 @@ namespace Config {
 		bool& only_moving,
 		bool& enabled
 	) {
+		std::lock_guard<std::mutex> lock(config_lock);
+
 		std::ifstream cfg(path);
 		if (cfg.is_open()) {
 			for (std::string line; std::getline(cfg, line, '='); ) {
