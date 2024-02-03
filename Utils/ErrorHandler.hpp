@@ -15,11 +15,11 @@ namespace Utils {
 		static HWND window;
 
 		static void send(INT8 error) {
-			char errorMessage[10];
+			char errorMessage[11];
 			sprintf_s(errorMessage, "Ошибка #%d", error);
-			MessageBoxA(window, errorMessage, "UnlimitedCPS", MB_ICONERROR);
+			MessageBoxA(window, errorMessage, "Velocity", MB_ICONERROR);
 		}
 	};
 
-	HWND ErrorHandler::window = FindWindowA(nullptr, "VimeWorld");
+	HWND ErrorHandler::window = nullptr;
 }

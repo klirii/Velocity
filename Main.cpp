@@ -143,6 +143,8 @@ void InitializeGlobals() {
 
 	JavaHook::active_hooks = std::vector<JavaHook*>();
 	Config::path = std::string(getenv("APPDATA")) + "\\.vimeworld\\minigames\\Velocity.ini";
+
+	Utils::ErrorHandler::window = FindWindowA(nullptr, "VimeWorld");
 }
 
 void Main() {

@@ -76,7 +76,7 @@ public:
 		}
 
 		inline static void CopyBits(BYTE& dest, const BYTE& src, __int8 start_bit, __int8 size) {
-			Guarantee((start_bit + size) <= 8, "The start bit is too large to copy the size of the bits");
+			//Guarantee((start_bit + size) <= 8, "The start bit is too large to copy the size of the bits");
 
 			for (int i = 0; i < size; i++)
 				SetBit(dest, start_bit + i, GetBit(src, start_bit + i));
@@ -126,7 +126,7 @@ public:
 	bool compiled = false;
 
 	JavaHook(Method* method, void* interceptor) {
-		Guarantee(method && interceptor, "Invalid parameters");
+		//Guarantee(method && interceptor, "Invalid parameters");
 
 		this->method = method;
 #pragma warning(suppress:6011)
@@ -137,7 +137,7 @@ public:
 	}
 
 	JavaHook(jmethodID method_id, void* interceptor) {
-		Guarantee(method_id && interceptor, "Invalid parameters");
+		//Guarantee(method_id && interceptor, "Invalid parameters");
 
 		this->method = Method::resolve_jmethod_id(method_id);
 		this->signature = SignatureIterator(method->const_method->constants->symbol_at(method->const_method->signature_index));
@@ -161,15 +161,15 @@ public:
 	T GetArgument(int index) {
 		int args_count = signature.GetArgumentsCount();
 
-		Guarantee(index - 1 < args_count, "Out of bounds");
-		Guarantee(index >= -1, "The argument index cannot be negative");
+		//Guarantee(index - 1 < args_count, "Out of bounds");
+		//Guarantee(index >= -1, "The argument index cannot be negative");
 
 		int type = index ? signature.GetArgumentType(index - 1) : NULL;
 		bool integer = type ? (type != SignatureIterator::FLOAT_T && type != SignatureIterator::DOUBLE_T) : true;
 
 		if (compiled && integer) {
 			if (index == -1) {
-				Guarantee(method->is_native(), "You can get JNIEnv* only from the native method!");
+				//Guarantee(method->is_native(), "You can get JNIEnv* only from the native method!");
 				return Utils::bit_cast<T>(registers.Rcx);
 			}
 
@@ -220,15 +220,15 @@ public:
 	void SetArgument(int index, T value) {
 		int args_count = signature.GetArgumentsCount();
 
-		Guarantee(index - 1 < args_count, "Out of bounds");
-		Guarantee(index >= -1, "The argument index cannot be negative");
+		//Guarantee(index - 1 < args_count, "Out of bounds");
+		//Guarantee(index >= -1, "The argument index cannot be negative");
 
 		int type = index ? signature.GetArgumentType(index - 1) : NULL;
 		bool integer = type ? (type != SignatureIterator::FLOAT_T && type != SignatureIterator::DOUBLE_T) : true;
 
 		if (compiled && integer) {
 			if (index == -1) {
-				Guarantee(method->is_native(), "You can get JNIEnv* only from the native method!");
+				//Guarantee(method->is_native(), "You can get JNIEnv* only from the native method!");
 				registers.Rcx = Utils::bit_cast<DWORD64>(value);
 			}
 
@@ -292,7 +292,7 @@ private:
 		}
 
 		void Write(BYTE* instruction, int size) {
-			Guarantee(pos < this->size, "The buffer size is too small to write an instruction into it");
+			//Guarantee(pos < this->size, "The buffer size is too small to write an instruction into it");
 			if (WriteProcessMemory(GetCurrentProcess(), current, instruction, size, nullptr)) {
 				current += size;
 				pos += size;
@@ -322,7 +322,7 @@ private:
 		SignatureIterator() = default;
 
 		SignatureIterator(Symbol* signature) {
-			Guarantee(signature->length, "The signature cannot be an empty string");
+			//Guarantee(signature->length, "The signature cannot be an empty string");
 			this->signature = signature->as_string();
 			ParseArgumentsTypes();
 		}
@@ -415,7 +415,7 @@ private:
 		}
 
 		int GetArgumentType(int index) {
-			Guarantee(index < GetArgumentsCount(), "Out of bounds");
+			//Guarantee(index < GetArgumentsCount(), "Out of bounds");
 			return arguments_types[index];
 		}
 
@@ -602,7 +602,7 @@ private:
 
 		// Allocate the local stack for the interceptor
 		stack = VirtualAlloc(NULL, STACK_SIZE, MEM_COMMIT, PAGE_READWRITE);
-		Guarantee(stack, "Stack allocation for the interceptor has failed");
+		//Guarantee(stack, "Stack allocation for the interceptor has failed");
 
 		// We make the stack aligned on an 8-byte boundary but not aligned on a 16-byte boundary
 		uintptr_t stack_base = AlignStack(reinterpret_cast<uintptr_t>(stack) + STACK_SIZE - 40);
@@ -684,6 +684,7 @@ private:
 	}
 
 	void InitializeI2iEntryShell(InstructionBufferStream& shell) {
+		if (active_hooks.size() > 1) Utils::EnumerateThreads(SuspendThread);
 		memset(i2i_entry_shell, 0, 4096);
 
 		BYTE pushfq = 0x9C;
@@ -712,16 +713,18 @@ private:
 
 		shell.Write(pop_r10, 2);
 		shell.Write(&popfq, 1);
+
+		if (active_hooks.size() > 1) Utils::EnumerateThreads(ResumeThread);
 	}
 
 	void Update() {
+		while (!method->i2i_entry()) Sleep(100);
 		nmethod* code = reinterpret_cast<nmethod*>(1);
 
 		if (active_hooks.size() > 1) i2i_entry_shell = active_hooks[0]->i2i_entry_shell;
 		else i2i_entry_shell = reinterpret_cast<BYTE*>(VirtualAlloc(NULL, 4096, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
 
 		InstructionBufferStream shell(i2i_entry_shell, 4096);
-		Utils::EnumerateThreads(SuspendThread);
 		InitializeI2iEntryShell(shell);
 
 		bool i2i_entry_match_hooked = false;
@@ -736,8 +739,8 @@ private:
 		while (true) {
 			compiled = method->code() ? true : false;
 
-			if (!compiled && !i2i_entry_hooked || compiled && method->code() != code) {
-				if (initialized && !compiled) Utils::EnumerateThreads(SuspendThread);
+			if (!compiled && method->i2i_entry() && !i2i_entry_hooked || compiled && method->code() != code) {
+				if (!compiled) Utils::EnumerateThreads(SuspendThread);
 
 				for (int i = 0; i < active_hooks.size(); i++) {
 					if (active_hooks[i] != this && active_hooks[i]->method->i2i_entry() == method->i2i_entry()) {
@@ -860,7 +863,7 @@ private:
 
 		// Allocate a gateway to save registers, flags and stack before interceptor call and restore them afterwards
 		gateway = reinterpret_cast<BYTE*>(VirtualAlloc(NULL, 4096, MEM_COMMIT, PAGE_EXECUTE_READWRITE));
-		Guarantee(gateway, "The allocation of a gateway has failed");
+		//Guarantee(gateway, "The allocation of a gateway has failed");
 
 		// Create a stream buffer to write instructions to the gateway and initialize it
 		gateway_stream = InstructionBufferStream(gateway, 4096);

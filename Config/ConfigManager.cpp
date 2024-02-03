@@ -10,28 +10,8 @@
 
 #pragma warning(disable:4244)
 
-bool ConfigManager::isEnabled = false;
-std::string ConfigManager::keybind = "";
-
-std::string ConfigManager::UnlimitedCPS = "";
 std::string ConfigManager::Loader = "";
 std::string ConfigManager::Game = "";
-
-ConfigManager::ConfigManager() {
-	UnlimitedCPS = std::string(getenv("APPDATA")) + "\\.vimeworld\\minigames\\UnlimitedCPS.ini";
-	isEnabled = true;
-	keybind = "F8";
-
-	struct _stat fiBuf;
-	if (_stat(UnlimitedCPS.c_str(), &fiBuf) == -1) {
-		std::wofstream config(UnlimitedCPS);
-		config.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t>));
-
-		config << L"keybind=F8\n";
-		config << L"enabled=true";
-		config.close();
-	}
-}
 
 std::string ConfigManager::ParseUsername(bool game) {
 	if (!game) {
@@ -68,34 +48,4 @@ std::string ConfigManager::ParsePassword() {
 		std::getline(config, password);
 
 	return password;
-}
-
-void ConfigManager::ChangeState(std::string keybind, bool isEnabled) {
-	std::wofstream config(UnlimitedCPS, std::ios::trunc);
-	config.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t>));
-
-	config << L"keybind=" << std::wstring(keybind.begin(), keybind.end()) << std::endl;
-	config << L"enabled=" << (isEnabled ? L"true" : L"false");
-	config.close();
-}
-
-void ConfigManager::Parse() {
-	std::string line;
-	std::wstring wline;
-	char* lineParts[2];
-
-	std::wifstream config(UnlimitedCPS);
-	config.imbue(std::locale(std::locale::empty(), new std::codecvt_utf8<wchar_t>));
-
-	while (std::getline(config, wline)) {
-		line = std::string(wline.begin(), wline.end());
-		if (line.find("keybind") != string::npos) {
-			StringUtils::split(line.c_str(), '=', lineParts);
-			ConfigManager::keybind = StringUtils::toUpper(lineParts[1]);;
-		}
-		else if (line.find("enabled") != string::npos) {
-			StringUtils::split(line.c_str(), '=', lineParts);
-			ConfigManager::isEnabled = strcmp(lineParts[1], "true") == 0 ? true : false;
-		}
-	}
 }
