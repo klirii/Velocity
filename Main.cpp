@@ -85,15 +85,16 @@ void ChangeState() {
 }
 
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
-	if (nCode == HC_ACTION && wParam == WM_KEYDOWN)
-		if (reinterpret_cast<PKBDLLHOOKSTRUCT>(lParam)->vkCode == keycode)
+	if (nCode == HC_ACTION && wParam == WM_KEYDOWN) {
+		if (keycode && reinterpret_cast<PKBDLLHOOKSTRUCT>(lParam)->vkCode == keycode)
 			ChangeState();
+	}
 
 	return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
 void SetKeyboardHook() {
-	HHOOK hook = SetWindowsHookExW(WH_KEYBOARD_LL, LowLevelKeyboardProc, NULL, NULL);
+	HHOOK hook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, nullptr, NULL);
 	if (!hook) Utils::ErrorHandler::send(KEYBOARD_HOOK_ERROR);
 
 	MSG msg;
