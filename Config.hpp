@@ -11,27 +11,6 @@ namespace Config {
 	std::string path;
 	std::mutex config_lock;
 
-#define GET_INT_VAL(stream, line, param) {	\
-	if (line == #param) {					\
-		std::getline(stream, line);			\
-		param = atoi(line.c_str());			\
-	}										\
-}											\
-
-#define GET_BOOL_VAL(stream, line, param) {		\
-	if (line == #param) {						\
-		std::getline(stream, line);				\
-		param = line == "true" ? true : false;	\
-	}											\
-}												\
-
-#define GET_STRING_VAL(stream, line, param) {	\
-	if (line == #param) {						\
-		std::getline(stream, line);				\
-		param = line;                           \
-	}											\
-}                                               \
-
 	void Rewrite(
 		const int horizontal_min,
 		const int horizontal_max,
@@ -88,19 +67,15 @@ namespace Config {
 
 		std::ifstream cfg(path);
 		if (cfg.is_open()) {
-			for (std::string line; std::getline(cfg, line, '='); ) {
-				GET_INT_VAL(cfg, line, horizontal_min);
-				GET_INT_VAL(cfg, line, horizontal_max);
-				GET_INT_VAL(cfg, line, vertical_min);
-				GET_INT_VAL(cfg, line, vertical_max);
-
-				GET_BOOL_VAL(cfg, line, only_forward);
-				GET_BOOL_VAL(cfg, line, only_moving);
-				GET_BOOL_VAL(cfg, line, enabled);
-
-				std::string keybind;
-				GET_STRING_VAL(cfg, line, keybind);
-				keycode = Keybind::GetVirtualKeyCodeByKeyName(keybind);
+			for (std::string param, value; std::getline(cfg, param, '=') && std::getline(cfg, value); ) {
+				if (param == "horizontal_min") horizontal_min = atoi(value.c_str());
+				else if (param == "horizontal_max") horizontal_max = atoi(value.c_str());
+				else if (param == "vertical_min") vertical_min = atoi(value.c_str());
+				else if (param == "vertical_max") vertical_max = atoi(value.c_str());
+				else if (param == "only_forward") only_forward = (value == "true" ? true : false);
+				else if (param == "only_moving") only_moving = (value == "true" ? true : false);
+				else if (param == "enabled") enabled = (value == "true" ? true : false);
+				else if (param == "keybind") keycode = Keybind::GetVirtualKeyCodeByKeyName(value);
 			}
 		}
 		else {

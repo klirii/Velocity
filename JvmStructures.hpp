@@ -24,7 +24,14 @@ typedef unsigned short u2;
 typedef unsigned int u4, narrowKlass;
 typedef oopDesc* oop;
 
+typedef size_t(*max_heap_capacity_t)(void*);
+max_heap_capacity_t max_heap_capacity;
+
+HMODULE jvm = nullptr;
+
 namespace Offsets {
+	DWORD heap_offset = NULL;
+
 	DWORD InstanceKlass_name_offset = NULL;
 	DWORD InstanceKlass_methods_offset = NULL;
 	DWORD InstanceKlass_fields_offset = NULL;
@@ -36,6 +43,8 @@ namespace Offsets {
 	DWORD Method_code_offset = NULL;
 
 	DWORD nmethod_verified_entry_point_offset = NULL;
+
+#define HEAP_PATTERN "48 8B 0D ? ? ? ? 48 3B C2"
 
 #define INSTANCEKLASS_NAME_PATTERN "48 8B 89 ? ? ? ? 4C 8B E8 E8"
 #define INSTANCEKLASS_METHODS_PATTERN "48 8B AB ? ? ? ? 48 85 ED ? ? ? ? ? ? 33 FF"
@@ -64,7 +73,24 @@ namespace Offsets {
 	void Initialize() {
 		HANDLE process = GetCurrentProcess();
 		MODULEINFO mod_info;
-		GetModuleInformation(process, GetModuleHandleA("jvm.dll"), &mod_info, sizeof(MODULEINFO));
+		GetModuleInformation(process, jvm, &mod_info, sizeof(MODULEINFO));
+		
+		{
+			std::vector<BYTE*> findings;
+			AOBScanner::Scan(
+				process,
+				HEAP_PATTERN,
+				findings,
+				AOBScanner::RegionAttributes(PAGE_EXECUTE_READ | PAGE_GUARD, MEM_COMMIT, PAGE_EXECUTE_READ, MEM_MAPPED),
+				reinterpret_cast<BYTE*>(mod_info.lpBaseOfDll),
+				reinterpret_cast<BYTE*>(mod_info.lpBaseOfDll) + mod_info.SizeOfImage
+			);
+
+			if (findings.size() == 1) {
+				signed int heap_rva = *reinterpret_cast<signed int*>(findings[0] + 3);
+				heap_offset = static_cast<DWORD>((findings[0] + 7 + heap_rva) - (BYTE*)mod_info.lpBaseOfDll);
+			}
+		}
 
 		INITIALIZE_OFFSET(INSTANCEKLASS_NAME_PATTERN, InstanceKlass_name_offset, DWORD, 3);
 		INITIALIZE_OFFSET(INSTANCEKLASS_METHODS_PATTERN, InstanceKlass_methods_offset, DWORD, 3);
@@ -78,6 +104,18 @@ namespace Offsets {
 
 		INITIALIZE_OFFSET(NMETHOD_VERIFIED_ENTRY_POINT_PATTERN, nmethod_verified_entry_point_offset, DWORD, 6);
 	}
+}
+
+void* Heap() {
+	return *reinterpret_cast<void**>((BYTE*)jvm + Offsets::heap_offset);
+}
+
+size_t MaxAllocatedMemory() {
+	void* heap = Heap();
+	uintptr_t heap_vftable = *reinterpret_cast<uintptr_t*>(heap);
+
+	if (!max_heap_capacity) max_heap_capacity = *reinterpret_cast<max_heap_capacity_t*>(heap_vftable + 0x68);
+	return max_heap_capacity(heap);
 }
 
 class Symbol {

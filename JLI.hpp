@@ -1,14 +1,13 @@
 #pragma once
 
-#include <Windows.h>
+#include <string>
+#include <fstream>
 
 #include <jni.h>
 #include "JvmStructures.hpp"
 
-HMODULE jvm = nullptr;
 JavaVM* vm = nullptr;
 JNIEnv* env = nullptr;
-
 jobject class_loader = nullptr;
 
 typedef jint(JNICALL* JNI_GetCreatedJavaVMs_t)(JavaVM**, jsize, jsize*);
@@ -94,7 +93,8 @@ T GetField(oop obj, FieldInfo* field) {
 }
 
 oop GetObjectField(oop obj, FieldInfo* field) {
-	return obj->obj_field(field->offset());
+	oop result = obj->obj_field(field->offset());
+	return (MaxAllocatedMemory() / 1024 / 1024) > 2048 ? reinterpret_cast<oop>((uintptr_t)result << 3) : result;
 }
 
 template<typename T>

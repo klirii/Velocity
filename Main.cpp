@@ -41,7 +41,7 @@ int GenerateRandomInRange(int min, int max) {
 void SetVelocityInterceptor(JavaHook* hook) {
 	if (enabled) {
 		oop instance = hook->GetArgument<oop>(0);
-		if (instance->instanceof()->name()->as_string() == "bew") {
+		if (instance && instance->instanceof()->name()->as_string() == "bew") {
 			horizontal_multiplier = static_cast<jdouble>(GenerateRandomInRange(horizontal_min, horizontal_max)) / 100.0;
 			vertical_multiplier = static_cast<jdouble>(GenerateRandomInRange(vertical_min, vertical_max)) / 100.0;
 
@@ -93,7 +93,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 }
 
 void SetKeyboardHook() {
-	HHOOK hook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, nullptr, NULL);
+	HHOOK hook = SetWindowsHookExW(WH_KEYBOARD_LL, LowLevelKeyboardProc, NULL, NULL);
 	if (!hook) Utils::ErrorHandler::send(KEYBOARD_HOOK_ERROR);
 
 	MSG msg;
@@ -140,11 +140,10 @@ void InitializeGlobals() {
 	JNI_GetCreatedJavaVMs_p(&vm, 1, nullptr);
 
 	Offsets::Initialize();
-
 	JavaHook::active_hooks = std::vector<JavaHook*>();
-	Config::path = std::string(getenv("APPDATA")) + "\\.vimeworld\\minigames\\Velocity.ini";
 
 	Utils::ErrorHandler::window = FindWindowA(nullptr, "VimeWorld");
+	Config::path = std::string(getenv("APPDATA")) + "\\.vimeworld\\minigames\\Velocity.ini";
 }
 
 void Main() {
