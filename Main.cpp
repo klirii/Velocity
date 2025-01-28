@@ -1,22 +1,30 @@
 #include "Main.hpp"
 
 #pragma warning(disable:6031)
+#pragma warning(disable:6387)
+
+HANDLE current_process = nullptr;
+
+HMODULE    jvm      = nullptr;
+MODULEINFO jvm_info = { NULL };
+
+ClassLoaderData* class_loader = nullptr;
 
 jdouble horizontal_multiplier = 1;
-jdouble vertical_multiplier = 1;
+jdouble vertical_multiplier   = 1;
 
 int horizontal_min = 100;
 int horizontal_max = 100;
-int vertical_min = 100;
-int vertical_max = 100;
+int vertical_min   = 100;
+int vertical_max   = 100;
 
 bool only_forward = false;
-bool only_moving = false;
+bool only_moving  = false;
 
 bool enabled = true;
 int  keycode = NULL;
 
-FieldInfo* player_f = nullptr;
+FieldInfo* player_f       = nullptr;
 FieldInfo* move_forward_f = nullptr;
 FieldInfo* rotation_yaw_f = nullptr;
 
@@ -136,11 +144,14 @@ void UpdateLicense() {
 }
 
 void InitializeGlobals() {
-	jvm = GetModuleHandleA("jvm.dll");
-	if (jvm) JNI_GetCreatedJavaVMs_p = reinterpret_cast<JNI_GetCreatedJavaVMs_t>(GetProcAddress(jvm, "IIIIlllllIIl"));
-	JNI_GetCreatedJavaVMs_p(&vm, 1, nullptr);
+	current_process = GetCurrentProcess();
 
-	Offsets::Initialize();
+	jvm = GetModuleHandleA("jvm.dll");
+	GetModuleInformation(current_process, jvm, &jvm_info, sizeof(MODULEINFO));
+
+	FindAllOffsets();
+	class_loader = FindClassLoader();
+
 	JavaHook::active_hooks = std::vector<JavaHook*>();
 
 	Utils::ErrorHandler::window = FindWindowA(nullptr, "VimeWorld");
@@ -150,26 +161,23 @@ void InitializeGlobals() {
 void Main() {
 	InitializeGlobals();
 
-	vm->AttachCurrentThread(reinterpret_cast<void**>(&env), nullptr);
-	SetClassLoader();
-
 	HANDLE update_license = CreateThread(nullptr, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>(UpdateLicense), nullptr, NULL, nullptr);
 	if (!update_license) exit(0);
 
 	CreateThread(nullptr, NULL, reinterpret_cast<LPTHREAD_START_ROUTINE>(UpdateState), nullptr, NULL, nullptr);
 
 	// Classes
-	jclass Minecraft = FindClass("ave");
+	InstanceKlass* Minecraft = FindClass("ave");
 	if (!Minecraft) Utils::ErrorHandler::send(CLASS_NOT_FOUND);
 
-	jclass Entity = FindClass("pk");
+	InstanceKlass* Entity = FindClass("pk");
 	if (!Entity) Utils::ErrorHandler::send(CLASS_NOT_FOUND);
 
-	jclass EntityLivingBase = FindClass("pr");
+	InstanceKlass* EntityLivingBase = FindClass("pr");
 	if (!EntityLivingBase) Utils::ErrorHandler::send(CLASS_NOT_FOUND);
 
 	// Methods
-	Method* set_velocity = GetMethod(Entity, "i", "(DDD)V");
+	Method* set_velocity = FindMethod(Entity, "i", "(DDD)V");
 	if (!set_velocity) Utils::ErrorHandler::send(METHOD_NOT_FOUND);
 
 	// Fields
@@ -186,22 +194,16 @@ void Main() {
 	if (!rotation_yaw_f) Utils::ErrorHandler::send(FIELD_NOT_FOUND);
 
 	// Global objects
-	mc = GetObjectField(oopDesc::resolve_jclass(Minecraft), mc_f);
+	mc = GetObjectField(Minecraft->java_mirror(), mc_f);
 	if (!mc) Utils::ErrorHandler::send(OBJECT_NOT_FOUND);
 
 	// Hook
 	JavaHook* set_velocity_hook = new JavaHook(set_velocity, SetVelocityInterceptor);
-
-	env->DeleteLocalRef(EntityLivingBase);
-	env->DeleteLocalRef(Entity);
-	env->DeleteLocalRef(Minecraft);
-	vm->DetachCurrentThread();
-
 	SetKeyboardHook();
 }
 
 BOOL APIENTRY DllMain(HINSTANCE handle, DWORD reason, LPVOID reserved) {
-	if (reason == DLL_VIMEWORLD_ATTACH) {
+	if (reason == DLL_PROCESS_ATTACH) { // TODO DLL_VIMEWORLD_ATTACH
 		setlocale(LC_ALL, "ru");
 
 		client.host = "http://api.destructiqn.com:2086";

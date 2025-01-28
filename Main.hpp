@@ -17,7 +17,6 @@
 
 #define DLL_VIMEWORLD_ATTACH 0x888
 
-#define DEBUG(format, ...) printf("[!] " format "\n", __VA_ARGS__);
 #define M_PI 3.14159265358979323846
 
 using json = nlohmann::json;

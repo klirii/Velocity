@@ -44,16 +44,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="JvmStructures.hpp">
-      <Filter>Исходные файлы</Filter>
-    </ClInclude>
     <ClInclude Include="AOBScanner.hpp">
-      <Filter>Исходные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="JavaHook.hpp">
-      <Filter>Исходные файлы</Filter>
-    </ClInclude>
-    <ClInclude Include="JLI.hpp">
       <Filter>Исходные файлы</Filter>
     </ClInclude>
     <ClInclude Include="Config.hpp">
@@ -82,6 +73,21 @@
     </ClInclude>
     <ClInclude Include="Utils\Keybind.hpp">
       <Filter>Исходные файлы\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="JavaHook.hpp">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="JLI.hpp">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="JvmStructures.hpp">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="Offsets.hpp">
+      <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils.hpp">
+      <Filter>Исходные файлы</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

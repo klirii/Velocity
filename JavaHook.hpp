@@ -130,7 +130,7 @@ public:
 
 		this->method = method;
 #pragma warning(suppress:6011)
-		this->signature = SignatureIterator(method->const_method->constants->symbol_at(method->const_method->signature_index));
+		this->signature = SignatureIterator(method->constmethod()->constants()->symbol_at(method->constmethod()->signature_index()));
 
 		active_hooks.push_back(this);
 		Hook(interceptor);
@@ -140,7 +140,7 @@ public:
 		//Guarantee(method_id && interceptor, "Invalid parameters");
 
 		this->method = Method::resolve_jmethod_id(method_id);
-		this->signature = SignatureIterator(method->const_method->constants->symbol_at(method->const_method->signature_index));
+		this->signature = SignatureIterator(method->constmethod()->constants()->symbol_at(method->constmethod()->signature_index()));
 
 		active_hooks.push_back(this);
 		Hook(interceptor);
@@ -273,6 +273,13 @@ public:
 			*reinterpret_cast<T*>(registers.Rsp + 8 + offset) = value;
 		}
 	}
+
+	//static void DisableIntegrityChecks() {
+	//	DWORD old_protect = NULL;
+	//	VirtualProtect((BYTE*)brainstorm + Offsets::integrity_check_offset, 7, PAGE_EXECUTE_READWRITE, &old_protect);
+	//	memset((BYTE*)brainstorm + Offsets::integrity_check_offset + 4, 0x90, 3);
+	//	VirtualProtect((BYTE*)brainstorm + Offsets::integrity_check_offset, 7, old_protect, &old_protect);
+	//}
 
 private:
 
