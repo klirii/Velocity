@@ -205,6 +205,8 @@ void Main() {
 BOOL APIENTRY DllMain(HINSTANCE handle, DWORD reason, LPVOID reserved) {
 	if (reason == DLL_PROCESS_ATTACH) { // TODO DLL_VIMEWORLD_ATTACH
 		setlocale(LC_ALL, "ru");
+		//AllocConsole();
+		//freopen("CONOUT$", "w", stdout);
 
 		client.host = "http://api.destructiqn.com:2086";
 		client.user.name = ConfigManager::ParseUsername();

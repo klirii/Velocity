@@ -3,7 +3,13 @@
 extern ClassLoaderData* class_loader;
 
 ClassLoaderData* FindClassLoader() {
-	FIND_AOB(BytesToHexStr((BYTE*)&ik_vftable_address, 8).c_str(), InstanceKlass*, nullptr, nullptr);
+	FIND_AOB(
+		BytesToHexStr((BYTE*)&ik_vftable_address, 8).c_str(),
+		InstanceKlass*,
+		AOBScanner::RegionAttributes(PAGE_READWRITE, MEM_COMMIT, PAGE_READWRITE, MEM_PRIVATE),
+		nullptr,
+		nullptr
+	);
 
 	for (int i = 0; i < matches.size(); i++) {
 		if (matches[i] == (InstanceKlass*)&ik_vftable_address) continue;

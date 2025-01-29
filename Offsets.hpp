@@ -60,32 +60,43 @@ BYTE  collected_heap_capacity_offset = NULL;
 #define COLLECTED_HEAP_PATTERN "4B 8D 04 09 48 8B E9 48 8B 0D"
 #define COLLECTED_HEAP_CAPACITY_PATTERN "FF 50 ? 33 D2 48 8B DD"
 
-#define FIND_AOB(pattern, matches_data_type, from, to)	\
-	std::vector<matches_data_type> matches;				\
-	AOBScanner::Scan(									\
-		current_process,								\
-		pattern,										\
-		matches,										\
-		AOBScanner::RegionAttributes(),					\
-		from,											\
-		to												\
-	)													\
-
-#define FIND_AOB_IN_MODULE(pattern, matches_data_type, module_info)	\
-	FIND_AOB(														\
+#define FIND_AOB(pattern, matches_data_type, reg_attrs, from, to)	\
+	std::vector<matches_data_type> matches;							\
+	AOBScanner::Scan(												\
+		current_process,											\
 		pattern,													\
-		matches_data_type,											\
-		(BYTE*)module_info.lpBaseOfDll,								\
-		(BYTE*)module_info.lpBaseOfDll + module_info.SizeOfImage	\
+		matches,													\
+		reg_attrs,													\
+		from,														\
+		to															\
 	)																\
 
+#define FIND_AOB_IN_MODULE(pattern, matches_data_type, reg_attrs, module_info)	\
+	FIND_AOB(																	\
+		pattern,																\
+		matches_data_type,														\
+		reg_attrs,																\
+		(BYTE*)module_info.lpBaseOfDll,											\
+		(BYTE*)module_info.lpBaseOfDll + module_info.SizeOfImage				\
+	)																			\
+
 #define FIND_STRUCT_OFFSET(pattern, result_var, offset_data_type, offset_from_pattern) {							\
-	FIND_AOB_IN_MODULE(pattern, BYTE*, jvm_info);																	\
+	FIND_AOB_IN_MODULE(																								\
+		pattern,																									\
+		BYTE*,																										\
+		AOBScanner::RegionAttributes(PAGE_EXECUTE_READ, MEM_COMMIT, PAGE_EXECUTE_READ, MEM_MAPPED),					\
+		jvm_info																									\
+	);																												\
 	if (matches.size() == 1) result_var = *reinterpret_cast<offset_data_type*>(matches[0] + offset_from_pattern);	\
 }																													\
 
 #define FIND_VA_FROM_RVA(pattern, result_var, rva_offset_from_pattern, inst_offset_from_pattern, inst_length) {	\
-	FIND_AOB_IN_MODULE(pattern, BYTE*, jvm_info);																\
+	FIND_AOB_IN_MODULE(																							\
+		pattern,																								\
+		BYTE*,																									\
+		AOBScanner::RegionAttributes(PAGE_EXECUTE_READ, MEM_COMMIT, PAGE_EXECUTE_READ, MEM_MAPPED),				\
+		jvm_info																								\
+	);																											\
 																												\
 	if (matches.size() == 1) {																					\
 		signed int rva = *reinterpret_cast<signed int*>(matches[0] + rva_offset_from_pattern);					\

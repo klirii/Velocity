@@ -1,7 +1,8 @@
 #include <Windows.h>
 #include <iostream>
 
-#define DEBUG(format, ...) printf("[!] " format "\n", __VA_ARGS__);
+//#define DEBUG(format, ...) printf("[!] " format "\n", __VA_ARGS__);
+#define DEBUG(format, ...)
 
 std::string BytesToHexStr(BYTE* bytes, size_t size) {
 	// ћаксимальна€ длина строки: 3 символа (два дл€ байта и пробел) на каждый байт, минус 1 пробел на конце.
