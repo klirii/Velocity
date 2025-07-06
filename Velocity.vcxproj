@@ -73,7 +73,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>C:\Program Files\Java\jdk-17\include;C:\Program Files\Java\jdk-17\include\win32;C:\Program Files\Java\jdk-17\include\win32\bridge;C:\libs\udis86\BuildVS2010\Build\Include;C:\libs\curl\Release x64\include;C:\libs\json\include;C:\libs\md5cpp\include;C:\libs\cpp_string_utils-main\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\libs\udis86\BuildVS2010\Build\Lib\x64;C:\libs\curl\Release x64\lib;$(LibraryPath)</LibraryPath>
-    <TargetName>atio6axx</TargetName>
+    <TargetName>velocity</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

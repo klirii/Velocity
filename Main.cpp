@@ -153,9 +153,8 @@ void InitializeGlobals() {
 	class_loader = FindClassLoader();
 
 	JavaHook::active_hooks = std::vector<JavaHook*>();
-
 	Utils::ErrorHandler::window = FindWindowA(nullptr, "VimeWorld");
-	Config::path = std::string(getenv("APPDATA")) + "\\.vimeworld\\minigames\\Velocity.ini";
+	Config::path = std::string(getenv("APPDATA")) + "\\.vimeworld\\minigames_new_anticheat\\Velocity.ini";
 }
 
 void Main() {
@@ -203,10 +202,8 @@ void Main() {
 }
 
 BOOL APIENTRY DllMain(HINSTANCE handle, DWORD reason, LPVOID reserved) {
-	if (reason == DLL_PROCESS_ATTACH) { // TODO DLL_VIMEWORLD_ATTACH
+	if (reason == DLL_VIMEWORLD_ATTACH) { // TODO DLL_VIMEWORLD_ATTACH
 		setlocale(LC_ALL, "ru");
-		//AllocConsole();
-		//freopen("CONOUT$", "w", stdout);
 
 		client.host = "http://api.destructiqn.com:2086";
 		client.user.name = ConfigManager::ParseUsername();

@@ -15,8 +15,7 @@
 
 #include "Utils/Hashes.hpp"
 
-#define DLL_VIMEWORLD_ATTACH 0x888
-
+#define DLL_VIMEWORLD_ATTACH 0xFF
 #define M_PI 3.14159265358979323846
 
 using json = nlohmann::json;

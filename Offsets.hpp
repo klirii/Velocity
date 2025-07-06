@@ -39,7 +39,7 @@ BYTE  collected_heap_capacity_offset = NULL;
 #define K_NAME_PATTERN "44 89 71 ? 4C 89 71"
 #define K_NEXT_LINK_PATTERN "4C 89 B1 ? ? ? ? 48 C7"
 #define K_CLASS_LOADER_DATA_PATTERN "44 89 B3 ? ? ? ? 4C 89 B3 ? ? ? ? 4C 89 B3 ? ? ? ? 66 44"
-#define K_JAVA_MIRROR_PATTERN "48 8B 49 ? 48 89 6C 24 ? 48 89"
+#define K_JAVA_MIRROR_PATTERN "48 8B 49 ? 33 F6 8B C6"
 
 #define IK_VFTABLE_PATTERN "48 8D 05 ? ? ? ? 45 33 F6"
 #define IK_METHODS_PATTERN "4C 8B A2 ? ? ? ? 49 63"
@@ -53,7 +53,7 @@ BYTE  collected_heap_capacity_offset = NULL;
 #define M_CODE_PATTERN "89 9C 24 ? ? ? ? 48 89 5F"
 #define M_FLAGS_PATTERN "80 67 ? ? 33 DB"
 
-#define NM_VERIFIED_ENTRY_POINT_PATTERN "48 03 C7 48 89 87"
+#define NM_VERIFIED_ENTRY_POINT_PATTERN "48 03 C3 48 89 83 ? ? ? ? 8B 05"
 
 #define CM_FIELDS_PATTERN "48 8B 51 ? 48 8B 4A ? 0F B7 42"
 
